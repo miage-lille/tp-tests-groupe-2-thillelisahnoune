@@ -1,4 +1,108 @@
-# TP TESTING : How to test our new feature change number of seats ?
+# TP Testing 
+
+## 1. Tests unitaires
+
+### Test principal : 
+- **Change seats** : Vérifie la mise à jour des sièges d'un webinar depuis le dépôt en mémoire, et s'assure que le nombre de sièges est correctement mis à jour.
+
+### Cas testés :
+- **Webinar does not exist** : Vérifie qu'un `webinarId` inexistant déclenche une erreur.
+- **Update the webinar of someone else** : Vérifie qu'un utilisateur non organisateur ne peut pas modifier un webinar.
+- **Change seats to an inferior number** : Vérifie qu'une réduction du nombre de sièges est refusée.
+- **Change seats to a number greater than 1000** : Vérifie qu'un dépassement du nombre maximal de sièges est refusé.
+
+### Optimisations apportées :
+Le code initial contenait beaucoup de répétitions avec plus de 150 lignes. Grâce à l'utilisation de méthodes partagées, nous avons amélioré sa lisibilité et réduit les duplications :
+- **`expectWebinarToRemainUnchanged()`** : Vérifie que le webinar initial n'a pas été modifié.
+- **`whenUserChangesSeatsWith(payload)`** : Simplifie l'appel à `useCase.execute(payload)` pour rendre les tests plus clairs.
+- **`thenUpdatedWebinarSeatsShouldBe(expectedSeats)`** : Vérifie que le nombre de sièges mis à jour est correct.
+
+---
+
+## 2. Tests d'intégration
+
+### Technologies utilisées :
+- **Prisma**, **Docker**, et **PostgreSQL**.
+- Assurez-vous que Docker est installé et en cours d'exécution localement.
+
+### Étapes de mise en place :
+1. Déclarer les ressources nécessaires.
+2. Démarrer une base de données dédiée aux tests.
+3. Effectuer les migrations pour synchroniser la base (avec un timeout augmenté à 30 secondes si nécessaire).
+4. Nettoyer la base de données avant chaque test pour garantir l'indépendance.
+5. Arrêter proprement la base de données après les tests.
+
+### Prérequis :
+- Installer Prisma : `npm i --save-dev @prisma/client`
+- Installer le container PostgreSQL pour les tests : `npm install @testcontainers/postgresql@latest testcontainers@latest`
+
+### Tests mis en place :
+- **Create** :
+  - Vérifie la création d'un webinar avec un ID valide.
+  - Vérifie qu'une erreur est levée pour une création avec un ID déjà existant.
+- **FindById** :
+  - Vérifie la récupération d'un webinar existant.
+  - Vérifie qu'un ID inexistant retourne `null`.
+- **Update** :
+  - Vérifie la mise à jour d'un webinar existant.
+  - Vérifie qu'une erreur est levée pour la mise à jour d'un webinar inexistant.
+
+---
+
+## 3. Tests E2E 
+
+### Objectif :
+Tester les fonctionnalités de bout en bout en simulant des requêtes HTTP et en vérifiant que les cas critiques sont bien gérés.
+
+### Mise en place :
+1. Centralisation des méthodes communes dans un fichier `fixtures.ts` (situé dans `src/tests`).
+2. Installation des dépendances nécessaires : 
+   - `npm install --save-dev jest supertest @testcontainers/postgresql`
+3. Configuration de Jest :
+   - Ajouter dans `package.json` : `"test:e2e": "jest --config jest.config.e2e.ts"`
+   - Définir dans `jest.config.e2e.ts` :
+     ```javascript
+     rootDir: '.', // Définit la racine du projet
+     moduleNameMapper: {
+       '^src/(.*)$': '<rootDir>/src/$1', // Corrige le mapping pour `src/...`
+     },
+     ```
+
+### Tests mis en place :
+1. **ChangeSeats** :
+   - Vérifie que la mise à jour des sièges fonctionne pour un webinar existant avec un utilisateur autorisé.
+2. **WebinarNotFoundException** :
+   - Vérifie que l'exception est levée pour un webinar inexistant.
+3. **WebinarNotOrganizerException** :
+   - Vérifie que l'exception est levée lorsqu'un utilisateur non autorisé tente de modifier un webinar.
+
+---
+
+## 4. Commandes pour lancer les tests :
+
+- **Tests unitaires** : `npm run test:unit`
+- **Tests d'intégration** : `npm run test:int`
+- **Tests E2E** : `npm run test:e2e`
+- **Tous les tests** : `npm run test:all`
+
+### Remarque :
+Lancer tous les tests en une seule commande (`npm run test:all`) peut ne pas être recommandé si les tests d'intégration ou E2E dépassent les délais configurés.
+
+---
+
+## 5. Résolution des problèmes rencontrés :
+- **Problèmes liés aux chemins absolus dans Jest** : Ajoutez les propriétés suivantes dans `jest.config.e2e.ts` :
+ 
+ `
+  rootDir: '.', // Définit la racine du projet
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/src/$1', // Corrige le mapping des chemins absolus
+  },
+`
+- **Timeouts pour les tests longs** : Augmentez le timeout par défaut dans le fichier de configuration Jest avec testTimeout.
+
+
+
 
 ## Table of Contents
 

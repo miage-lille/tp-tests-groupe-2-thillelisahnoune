@@ -23,7 +23,12 @@ export async function webinarRoutes(
         password: 'fake',
       }),
     };
-
+  
+    // Validation des sièges invalides
+    if (changeSeatsCommand.seats <= 0) {
+      return reply.status(400).send({ error: 'Invalid seat number' });
+    }
+  
     try {
       await changeSeatsUseCase.execute(changeSeatsCommand);
       reply.status(200).send({ message: 'Seats updated' });
@@ -37,4 +42,5 @@ export async function webinarRoutes(
       reply.status(500).send({ error: 'An error occurred' });
     }
   });
+  
 }

@@ -4,7 +4,7 @@ import { IDateGenerator } from 'src/core/ports/date-generator.interface';
 import { IIdGenerator } from 'src/core/ports/id-generator.interface';
 import { InMemoryWebinarRepository } from 'src/webinars/adapters/webinar-repository.in-memory';
 import { Webinar } from 'src/webinars/entities/webinar.entity';
-import { OrganizeWebinars } from 'src/webinars/use-cases/organize-webinar';
+import { OrganizeWebinars } from 'src/webinars/use-cases/organize-webinar'; 
 
 describe('Feature: Organize webinars', () => {
   let repository: InMemoryWebinarRepository;
